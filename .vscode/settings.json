@@ -1,0 +1,8 @@
+{
+    "C_Cpp.default.includePath": [
+        "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino/",
+        "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include/",
+        "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard/",
+        //"/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/micro/"
+    ]
+}
