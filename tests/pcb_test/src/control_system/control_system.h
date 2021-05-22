@@ -1,5 +1,5 @@
-#ifndef CONTROL_SYSTEM_METHODS_H
-    #define CONTROL_SYSTEM_METHODS_H
+#ifndef CONTROL_SYSTEM_H
+    #define CONTROL_SYSTEM_H
 
     #include <Arduino.h>
 
@@ -8,29 +8,55 @@
         sensor/actuator corresponds to.
     */
 
+   #define RUN 0
+   #define TEST 1
+
+   #define PROGRAM_MODE TEST
+
    typedef struct pin {
+       char name[15];
        char* reg;
-       char num, pin;
+       char num;
+       int pin;
    } pin;
 
-    /* Sensor pins: Read-only therefore PIN register */
+    #if PROGRAM_MODE == TEST
+        /* Sensor pins: Read-only therefore PIN register */
+        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINC, 0, A0})     // Pin A0 (PF7)
+        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINC, 1, A1})       // Pin A1 (PF6)
 
-    #define CRANKSHAFT ((pin) {&PINF, 7, A0})   // Pin A0 (PF7)
-    #define CAMSHAFT   ((pin) {&PINF, 6, A1})   // Pin A1 (PF6)
+        #define THERMISTOR ((pin) {"THERMISTOR", &PINC, 5, A5})     // Pin A5 (PF0)
 
-    #define THERMISTOR ((pin) {&PINF, 0, A5})   // Pin A5 (PF0)
+        /* Actuator pins: Write-only therefore PORT register */
 
-    /* Actuator pins: Write-only therefore PORT register */
+        #define INJECTOR_1 ((pin) {"INJECTOR 1", &PORTB, 2, 10})    // Pin D5 (PC6)
+        #define INJECTOR_2 ((pin) {"INJECTOR 2", &PORTB, 3, 11})    // Pin D6 (PD7)
+        #define INJECTOR_3 ((pin) {"INJECTOR 3", &PORTB, 4, 12})    // Pin D7 (PE6)
+        #define INJECTOR_4 ((pin) {"INJECTOR 4", &PORTB, 5, 13})    // Pin D8 (PB4)
 
-    #define INJECTOR_1 ((pin) {&PORTC, 6, 5})   // Pin D5 (PC6)
-    #define INJECTOR_2 ((pin) {&PORTD, 7, 6})   // Pin D6 (PD7)
-    #define INJECTOR_3 ((pin) {&PORTE, 6, 7})   // Pin D7 (PE6)
-    #define INJECTOR_4 ((pin) {&PORTB, 4, 8})   // Pin D8 (PB4)
+        #define COIL_1 ((pin) {"COIL 1", &PORTB, 2, 10})            // Pin D12 (PD6)
+        #define COIL_2 ((pin) {"COIL 2", &PORTB, 3, 11})            // Pin D11 (PB7)
+        #define COIL_3 ((pin) {"COIL 3", &PORTB, 4, 12})            // Pin D10 (PB6)
+        #define COIL_4 ((pin) {"COIL 4", &PORTB, 5, 13})            // Pin D9 (PB5)
+    #else
+        /* Sensor pins: Read-only therefore PIN register */
+        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINF, 7, A0})     // Pin A0 (PF7)
+        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINF, 6, A1})       // Pin A1 (PF6)
 
-    #define COIL_1 ((pin) {&PORTD, 6, 12})      // Pin D12 (PD6)
-    #define COIL_2 ((pin) {&PORTB, 7, 11})      // Pin D11 (PB7)
-    #define COIL_3 ((pin) {&PORTB, 6, 10})      // Pin D10 (PB6)
-    #define COIL_4 ((pin) {&PORTB, 5, 9})       // Pin D9 (PB5)
+        #define THERMISTOR ((pin) {"THERMISTOR", &PINF, 0, A5})     // Pin A5 (PF0)
+
+        /* Actuator pins: Write-only therefore PORT register */
+
+        #define INJECTOR_1 ((pin) {"INJECTOR 1", &PORTC, 6, 5})     // Pin D5 (PC6)
+        #define INJECTOR_2 ((pin) {"INJECTOR 2", &PORTD, 7, 6})     // Pin D6 (PD7)
+        #define INJECTOR_3 ((pin) {"INJECTOR 3", &PORTE, 6, 7})     // Pin D7 (PE6)
+        #define INJECTOR_4 ((pin) {"INJECTOR 4", &PORTB, 4, 8})     // Pin D8 (PB4)
+
+        #define COIL_1 ((pin) {"COIL 1", &PORTD, 6, 12})            // Pin D12 (PD6)
+        #define COIL_2 ((pin) {"COIL 2", &PORTB, 7, 11})            // Pin D11 (PB7)
+        #define COIL_3 ((pin) {"COIL 3", &PORTB, 6, 10})            // Pin D10 (PB6)
+        #define COIL_4 ((pin) {"COIL 4", &PORTB, 5, 9})             // Pin D9 (PB5)
+    #endif
 
     // The change in crankshaft angle between IPG pulses
     #define IPG_PULSE_ANGLE 30
@@ -47,8 +73,22 @@
     #define SUPPLY 5
     #define ADC_MAX 1024
 
-    #define TEMPERATURE(V) ((0.3721 * pow(R, 6)) - )
+    /*
+    Internal temperature given by analog-in voltage, based off thermistor datasheet.
+    By polynomial approximation, the temperature is equal to:
 
+        T(v) = 0.3721v^6 - 4.2202v^5 
+             + 15.53v^4 - 13.148v^3 
+             - 36.986v^2 + 91.9v 
+             - 54.71
+    */
+    #define TEMPERATURE(V) ((0.3721 * pow(V, 6)) - (4.2202 * pow(V, 5)) \
+                           + (15.53 * pow(V, 4)) - (13.148 * pow(V, 3)) \
+                           - (36.986 * pow(V, 2)) + (91.9 * V) - 54.71)
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
     /*
         Definition for engine type. This is a struct that contains important 
@@ -81,16 +121,14 @@
 
     void init_engine(engine* e);
 
+    bool pin_is_valid(pin* p);
+
     void shutdown(engine* e);
 
-    void charge_coil(engine* e, char i);
-    void discharge_coil(engine* e, char i);
+    char pin_state(pin *target);
 
-    void open_injector(engine* e, char i);
-    void close_injector(engine* e, char i);
-
-    char get_cpg_state(engine* e);
-    char get_ipg_state(engine* e);
+    void open_circuit(pin* target);
+    void close_circuit(pin* target);
 
     float get_internal_temp(engine* e);
 
@@ -142,5 +180,9 @@
         the function will return -1.
     */
     int get_true_crank_angle(char pulses);
+
+    #ifdef __cplusplus
+    }
+    #endif
 
 #endif

@@ -1,10 +1,10 @@
-#ifndef CBR600F4I_OPERATING_MAP_H
-    #define CBR600F4I_OPERATING_MAP_H
+#ifndef ENGINE_MAP_H
+    #define ENGINE_MAP_H
 
     #include <Arduino.h>
 
     // Library containing basic methods for opening/closing circuits or measuring pulses
-    #include "../control_system_methods/control_system_methods.h"
+    #include "../control_system/control_system.h"
 
     // The duration a coil should charge for in crank angle degrees
     // This needs to be replaced with a timer interrupt for greater accuracy
@@ -13,8 +13,6 @@
     #define FUEL_START_ANGLE 0
     // The size of the fuel/ignition map
     #define MAP_SIZE 7
-    // The number of cylinders in the engine
-    #define CYLINDERS 4
     // The firing order of the engine cylinders (1-4-2-3)
     #define FIRING_ORDER ((int)[4] {1, 4, 2, 3})
 
@@ -33,8 +31,8 @@
     } operating_point;
 
     typedef struct timings {
-        float spark[CYLINDERS][2];
-        float fuel[CYLINDERS][2];
+        float spark[4][2];
+        float fuel[4][2];
         operating_point o;
     } timings;
 
@@ -62,9 +60,9 @@
         
         These values are saved to p, a pointer to an operating point.
     */
-    operating_point select_operating_point(unsigned int target_rpm);
+    operating_point select_operating_point(unsigned int target_speed);
 
-    timings get_engine_timings(engine* e, unsigned int target_rpm);
+    timings get_engine_timings(unsigned int engine_speed, unsigned int target_speed);
 
     /*
         Method to charge/discharge coils or open/close injectors depending 

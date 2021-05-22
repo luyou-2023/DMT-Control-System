@@ -1,7 +1,7 @@
-#include "control_system_methods.h"
+#include "control_system.h"
 
 void init_pin_modes(engine* e){
-    for(int i = 0; i < 4; i++){
+    for(size_t i = 0; i < 4; i++){
         pinMode(e->coils[i].pin, OUTPUT);
         pinMode(e->injs[i].pin, OUTPUT);
     }
@@ -85,13 +85,8 @@ char get_ipg_state(engine* e){
     return (*(e->ipg.reg) >> e->ipg.num) & 1;
 }
 
-/*
-    Voltage = 5V x R / (Rt + R) --> find Rt
-    Rt = 5V x R / voltage - R = R x ((5V / voltage) - 1)
-*/
-
 float get_internal_temp(engine* e){
-    float pin_voltage = analogRead(e->thermistor.pin) / ADC_MAX;
+    float pin_voltage = SUPPLY * analogRead(e->thermistor.pin) / ADC_MAX;
     return TEMPERATURE(pin_voltage);
 }
 
@@ -131,7 +126,7 @@ void increment_crank(engine* e, int angle){
     speed is approximated over several pulses.
 */
 void update_velocity(engine* e, unsigned long pulse_width){
-    if(e) e->speed = IPG_PULSE_ANGLE / pulse_width;
+    e->speed = IPG_PULSE_ANGLE / pulse_width;
 }
 
 /*

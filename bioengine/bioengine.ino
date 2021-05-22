@@ -1,8 +1,8 @@
 #include <Arduino.h>
 // Library containing basic methods for opening/closing circuits or measuring pulses
-#include "libraries/control_system_methods/control_system_methods.h"
+#include "libraries/control_system/control_system.h"
 // Library containg methods for evaluating the correct spark/fuel timings
-#include "libraries/operating_map/operating_map.h"
+#include "libraries/engine_map/engine_map.h"
 
 // Maximum internal temperature of control system allowed, in deg C
 #define MAX_INTERNAL_TEMP 100
