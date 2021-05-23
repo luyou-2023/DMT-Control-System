@@ -10,35 +10,36 @@ For more information about the testing process, read the __Test Specification__.
 
 In order to use this software, you must have:
 
-- Arduino Micro (or Arduino Uno for testing outside of the PCB)
+- Arduino Micro.
 - Arduino IDE.
 - GitHub Desktop (optional).
 
-To install the Arduino IDE, follow this [link](). The IDE provides an easy way to verify and upload the program to the board, as well as a serial monitor to communicate with the Arduino. 
+To install the Arduino IDE, follow this [link](https://www.arduino.cc/en/software). The IDE provides an easy way to verify and upload the program to the board, as well as a serial monitor to communicate with the Arduino. 
 
-GitHub Desktop also provides a quick way of downloading the repository, which can be installed from [here]().
+GitHub Desktop also provides a quick way of downloading the repository, which can be installed from [here](https://desktop.github.com/).
 
 ## Installation & Board Uploading
 
-Download this repositor by right-clicking the __code__ button on the repository home page and selecting either __Open with GitHub Desktop__ or __Download ZIP__.
+Download this repository by clicking the __code__ button on the repository homepage and selecting either __Open with GitHub Desktop__ or __Download ZIP__.
 
 Go to where the folder has been downloaded, and navigate to `pcb_test/` and open `pcb_test.ino` in the Arduino IDE.
 
 Click on the __Tools__ dropdown menu and select the board type. for the PCB test this will be __Arduino Micro__. Once the Arduino has been plugged into your computer, check the __Port__ from the same menu. This should be done automatically, however if no board is found, you can select the Micro from the list of available devices.
 
-Click __Upload__ to install the program on the Arduino. If the build fails please contact me.
+Click __Upload__ to install the program on the Arduino. If the build fails please [email me](mailto:louis.manestar18@imperial.ac.uk).
 
 
 ## Usage
 
-When the program has been uploaded, Click on the __Serial Montor__
-from the __Tools__ dropdown menu. This will allow you to communicate and instruct the Arduino to open/close different circuits.
+When the program has been uploaded, Click on the __Serial Monitor__ from the __Tools__ dropdown menu. This will allow you to communicate and instruct the Arduino to open/close different circuits.
 
-The instructions have the following syntax, based off bash commands.
-```
+The instructions passed to the Arduino have a bash-style syntax:
+
+```bash
 command [--TARGET target_name | --SPEED speed_value]
 ```
-There are four possible commands:
+
+There are four commands available:
 
 - `START`, which starts the pulses.
 - `STOP`, which stops the pulses.
@@ -47,7 +48,7 @@ There are four possible commands:
 
 `--TARGET` and `--SPEED` are optional arguments where you can include the target circuit and the speed in the instruction. 
 
-Note: All target names must be given in uppercase. You can select:
+Note: All target names must be given in __uppercase__. You can select:
 
 - `THERMISTOR` to get the value of temperature reading of the internal thermistor.
 - `CRANKSHAFT` to get the pin state of the Ignition Pulse Generator (IPG).

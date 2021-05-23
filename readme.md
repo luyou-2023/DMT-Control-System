@@ -10,15 +10,31 @@ This is based off camshaft and crankshaft encoders from the engine to determine 
 
 __For testing prerequisites, go to the readme within the relevant test folder.__
 
-You must have an Arduino Micro and `arduino-cli` installed in order to upload the program to the microcontroller.
+In order to run this software, you must have:
 
-You can install `arduino-cli` from [here](https://www.arduino.cc/pro/cli). Also make sure you have installed the core libraries, which can be done using the following command:
+- Arduino Micro.
+- Arduino IDE.
+- `arduino-cli` (optional).
+- GitHub Desktop (optional).
+
+You can install the Arduino IDE from [here](https://www.arduino.cc/en/software). Make sure you have the latest versions of all libraries, especially `SoftwareSerial`. These come as part of the IDE when it is first downloaded.
+
+You can install `arduino-cli` from [here](https://www.arduino.cc/pro/cli) or use Homebrew:
 
 ```bash
-arduino-cli core install arduino:samd
+brew install arduino-cli
 ```
 
-## Installation
+Also make sure you have installed the latest core libraries, which can be done using the following commands:
+
+```bash
+arduino-cli core install arduino:avr
+arduino-cli upgrade
+```
+
+You can download and install GitHub Desktop from [here](https://desktop.github.com/).
+
+## Installation & Board Uploading
 
 This repository can be downloaded using:
 
@@ -26,19 +42,22 @@ This repository can be downloaded using:
 git clone git@github.com:Loumstar/DMT-Control-System.git
 ```
 
-Before uploading the program to the Arduino, ensure all the tests have passed to make sure it will function correctly.
+Alternatively, you can download this repository by clicking the __code__ button on the repository homepage and selecting either __Open with GitHub Desktop__ or __Download ZIP__.
 
-To install the program onto the Micro, run the following command:
+Open `bioengine.ino` on the Arduino IDE. Connect your computer to the Arduino via USB. From the __Tools__ dropdown menu, set the board type to __Arduino Micro__ and select the relevant __Port__. The port is often selected automatically.
+
+To upload the program to the arduino, click __Upload__ on the Arduino IDE. Alternatively, you can use `arduino-cli` for more information on the process.
+
+Within `bioengine/` use the following commands:
 
 ```bash
-arduino-cli upload ...
+arduino-cli compile bioengine -v --fqbn arduino:avr:micro
+arduino-cli upload bioengine -v --port [PORT_NAME] --fqbn arduino:avr:micro
 ```
 
 ## Usage
 
-The arduino will start the program when powered on. Therefore, once the control has a power supply the program will run on its own. For the moment, the only way to power-off the Arduino is to remove the power supply.
 
-Control through a computer and serial communication will be added shortly.
 
 ## Testing
 
@@ -48,7 +67,7 @@ This repository contains three tests.
 
 The PCB test is a test script that is run on the Arduino while it is housed in the PCB of the control system.
 
-This test is necessary for checking all the transistors function as they should, by producing a a square wave for a particular injector or coil circuit, at a particular engine speed.
+This test is necessary for checking all the transistors function as they should, by producing a square wave for a particular injector or coil circuit, at a particular engine speed.
 
 For more information, go to the readme within `pcb_test/`.
 
@@ -64,7 +83,19 @@ More information will be added shortly.
 
 ```text
 DMT-Control-System/
-    readme.md                           
+    readme.md  
+    bioengine/
+        bioengine.ino
+        src/
+            control_system/
+                control_system.h
+                control_system.c 
+            engine_map/
+                engine_map.h
+                engine_map.c
+            messages/
+                messages.h
+                messages.c
     tests/
         pcb_test/
             readme.md
@@ -76,18 +107,18 @@ DMT-Control-System/
                 messages/
                     messages.h
                     messages.c
-    bioengine/
-        bioengine.ino
-        src/
-            control_system/
-                control_system.h
-                control_system.c 
-            engine_map/
-                engine_map.h
-                engine_map.c
-
-
+        unit_test/
+            bioengine.test.c
+            Makefile
+            src/
+                unittest/
+                    unittest.c
+                    unittest.h
+        engine_simulator/
+            engine_simulator.ino
 ```
+
+Note some of these libraries are copied over to the test folders. This is due to a quirk of Arduino when compiling, where local libraries can only be found if they are in a `src/` folder within the Arduino sketch.
 
 ## Contact
 
