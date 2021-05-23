@@ -48,56 +48,36 @@ void init_engine(engine* e){
 
 void shutdown(engine* e){
     for(size_t i = 0; i < 4; i++){
-        close_injector(e, i);
-        discharge_coil(e, i);
+        open_circuit(&(e->injs[i]));
+        open_circuit(&(e->coils[i]));
     }
 }
 
-void charge_coil(engine* e, char i){
-    if(e->is_running && i < 4){
-        *(e->coils[i].reg) |= 1 << e->coils[i].num;
-    }
+char pin_state(pin* target){
+    return (*(target->reg) >> target->num) & 1;
 }
 
-void discharge_coil(engine* e, char i){
-    if(i < 4){
-        *(e->coils[i].reg) &= ~(1 << e->coils[i].num);
-    }
+void open_circuit(pin* target){
+    *(target->reg) &= ~(1 << target->num);
 }
 
-void open_injector(engine* e, char i){
-    if(e->is_running && i < 4){
-        *(e->injs[i].reg) |= 1 << e->injs[i].num;
-    }
+void close_circuit(pin* target){
+    *(target->reg) |= 1 << target->num;
 }
 
-void close_injector(engine* e, char i){
-    if(i < 4){
-        *(e->injs[i].reg) &= ~(1 << e->injs[i].num);
-    }
-}
 
-char get_cpg_state(engine* e){
-    return (*(e->cpg.reg) >> e->cpg.num) & 1;
-}
-
-char get_ipg_state(engine* e){
-    return (*(e->ipg.reg) >> e->ipg.num) & 1;
-}
-
-float get_internal_temp(engine* e){
-    float pin_voltage = SUPPLY * analogRead(e->thermistor.pin) / ADC_MAX;
-    return TEMPERATURE(pin_voltage);
+int get_internal_temp(engine* e){
+    float pin_voltage = (float) SUPPLY * analogRead(e->thermistor.pin) / ADC_MAX;
+    e->temp = (int) TEMPERATURE((float) pin_voltage);
+    return e->temp;
 }
 
 void update_engine_signals(engine* e){
     e->_prev_ipg_state = e->_ipg_state;
     e->_prev_cpg_state = e->_cpg_state;
 
-    e->_ipg_state = get_ipg_state(e);
-    e->_cpg_state = get_cpg_state(e);
-
-    e->temp = get_internal_temp(e);
+    e->_ipg_state = pin_state(&(e->ipg));
+    e->_cpg_state = pin_state(&(e->cpg));
 }
 
 bool cpg_pulsed(engine* e){
@@ -110,7 +90,6 @@ bool ipg_pulsed(engine* e){
 
 void set_crank(engine* e, int angle){
     e->crank = angle;
-    e->is_running = true;
 }
 
 void increment_crank(engine* e, int angle){
@@ -177,4 +156,16 @@ int get_true_crank_angle(char pulses){
         default:
             return -1;
     }
+}
+
+bool within_interval(float angle, float bounds[2]){
+    return angle < bounds[1] && angle > bounds[0];
+}
+
+bool should_open_circuit(float angle, float bounds[2], pin* p){
+    return pin_state(p) && !within_interval(angle, bounds);
+}
+
+bool should_close_circuit(float angle, float bounds[2], pin* p){
+    return !pin_state(p) && within_interval(angle, bounds);
 }

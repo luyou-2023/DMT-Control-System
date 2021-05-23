@@ -46,10 +46,6 @@ void init_engine(engine* e){
     e->_prev_cpg_state = 0;
 }
 
-bool pin_is_valid(pin* p){
-    return (p->reg + p->num) != NULL && p->pin != -1;
-}
-
 void shutdown(engine* e){
     for(size_t i = 0; i < 4; i++){
         open_circuit(&(e->injs[i]));

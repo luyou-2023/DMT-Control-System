@@ -1,6 +1,6 @@
 #include "messages.h"
 
-void get_message_keywords(const char message[], keywords kws){
+void get_message_keywords(const char* message, keywords kws){
     if(!message || !kws) return;
 
     size_t i = 0, j = 0, k = 0;
@@ -45,6 +45,7 @@ int get_flag_index(keywords k, char* flag){
 
 pin* get_target(keywords k, engine* e){
     int i = get_flag_index(k, TARGET_FLAG);
+    
     if(i == -1) return NULL;
 
     if(!strcmp(k[i + 1], THERMISTOR_KEYWORD)){
@@ -91,8 +92,7 @@ instr get_instruction(const char* message, engine* e){
 }
 
 void get_instruction_message(instr* i, char message[150]){
-    char type_name[10];
-
+    char type_name[10] = INVALID_KEYWORD;
     char target_string[100] = "not given";
     char speed_string[50] = "not given";
 
@@ -108,9 +108,6 @@ void get_instruction_message(instr* i, char message[150]){
             break;
         case GET_CODE:
             sprintf(type_name, GET_KEYWORD);
-            break;
-        default:
-            sprintf(type_name, INVALID_KEYWORD);
     }
 
     if((i->type == STOP_CODE || i->type == SET_CODE || i->type == GET_CODE) && i->target){
@@ -124,4 +121,16 @@ void get_instruction_message(instr* i, char message[150]){
 
     sprintf(message, "\nnew instruction:\n    type: %s\n    target: %s\n    speed: %s\n", 
         type_name, target_string, speed_string);
+}
+
+void print_target_value(instr* i, engine* e, char* message){
+    char value[20];
+
+    if(!strcmp(i->target->name, THERMISTOR_KEYWORD)){
+        sprintf(value, "%i degC", (int) get_internal_temp(e));
+    } else {
+        sprintf(value, "%s", pin_state(i->target) ? "HIGH" : "LOW");
+    }
+
+    sprintf(message, "%s: %s\n", i->target->name, value);
 }

@@ -16,13 +16,14 @@ typedef struct circuit {
 circuit c = {
     .pulse_width = 0,
     .speed = 0,
-    .target = NULL
+    .target = NULL,
+    .is_pulsing = false
 };
 
 engine e;
 
 size_t buffer = 0;
-char message[MESSAGE_SIZE] = {0};
+char message[MESSAGE_SIZE];
 bool message_available = false;
 
 unsigned long counter = 0;
@@ -49,18 +50,6 @@ void set_circuit(instr* i, circuit* c){
     }
 }
 
-void get_circuit_value(instr* i, engine* e, char* message){
-    char value[20];
-
-    if(!strcmp(i->target->name, THERMISTOR_KEYWORD)){
-        sprintf(value, "%i degC", (int) get_internal_temp(e));
-    } else {
-        sprintf(value, "%s", pin_state(i->target) ? "HIGH" : "LOW");
-    }
-
-    sprintf(message, "%s: %s\n", i->target->name, value);
-}
-
 void setup(void){
     Serial.begin(9600);
     init_engine(&e);
@@ -85,7 +74,6 @@ void loop(void){
         instr i = get_instruction(message, &e);
 
         char readback[150];
-
         get_instruction_message(&i, readback);
         Serial.println(readback);
 
@@ -100,11 +88,8 @@ void loop(void){
                 set_circuit(&i, &c);
                 break;
             case GET_CODE:
-                get_circuit_value(&i, &e, readback);
+                print_target_value(&i, &e, readback);
                 Serial.println(readback);
-                break;
-            default:
-                Serial.println("No change from instruction.");
         }
 
         counter = micros();
@@ -112,7 +97,7 @@ void loop(void){
     }
     
     if((micros() - counter > c.pulse_width) && c.is_pulsing){
-        if(pin_state(c.target) == 1){
+        if(pin_state(c.target) == HIGH){
             open_circuit(c.target);
         } else {
             close_circuit(c.target);

@@ -6,15 +6,19 @@
     // Library containing basic methods for opening/closing circuits or measuring pulses
     #include "../control_system/control_system.h"
 
-    // The duration a coil should charge for in crank angle degrees
+    // The duration a coil should charge for in microseconds
     // This needs to be replaced with a timer interrupt for greater accuracy
-    #define DWELL_TIME_ANGLE 5
+    #define DWELL_TIME 2000
     // The crank angle at which fuel injectors will open
-    #define FUEL_START_ANGLE 0
+    #define MIN_FUEL_START_ANGLE 10
+    #define MAX_FUEL_END_ANGLE 90
+
     // The size of the fuel/ignition map
     #define MAP_SIZE 7
-    // The firing order of the engine cylinders (1-4-2-3)
-    #define FIRING_ORDER ((int)[4] {1, 4, 2, 3})
+
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
     /*
         Definition of an operating-point type. This contains:
@@ -31,9 +35,10 @@
     } operating_point;
 
     typedef struct timings {
-        float spark[4][2];
-        float fuel[4][2];
-        operating_point o;
+        float spark[2];
+        float fuel[2];
+        bool is_valid;
+        operating_point* o;
     } timings;
 
     /*
@@ -41,7 +46,10 @@
         for the CBR600f4i that are optimised for ethanol.
     */
 
-    const operating_point operating_map[] {
+   // The firing order of the engine cylinders (1-4-2-3)
+    extern int cylinder_phases[4] = {0, 180, 270, 90};
+
+    extern operating_point operating_map[7] = {
         {1000,  7.50,  4.15},
         {2000, 15.00,  9.57},
         {3000, 20.00, 23.45},
@@ -60,15 +68,15 @@
         
         These values are saved to p, a pointer to an operating point.
     */
-    operating_point select_operating_point(unsigned int target_speed);
 
-    timings get_engine_timings(unsigned int engine_speed, unsigned int target_speed);
+    void init_timings(timings* t);
 
-    /*
-        Method to charge/discharge coils or open/close injectors depending 
-        on the current crankshaft angle and the operating point 
-        set for the engine.
-    */
-    void check_engine_timings(float crank, timings* t);
+    int set_operating_point(operating_point* o, unsigned int target_speed);
+
+    int set_engine_timings(timings* t, const operating_point* o, const engine* e);
+
+    #ifdef __cplusplus
+    }
+    #endif
 
 #endif

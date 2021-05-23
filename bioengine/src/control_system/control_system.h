@@ -8,68 +8,70 @@
         sensor/actuator corresponds to.
     */
 
-   #define RUN 0
-   #define TEST 1
+   #define RUN      0
+   #define TEST     1
 
    #define PROGRAM_MODE TEST
 
    typedef struct pin {
+       char name[15];
        char* reg;
-       char num, pin;
+       char num;
+       int pin;
    } pin;
 
     #if PROGRAM_MODE == TEST
         /* Sensor pins: Read-only therefore PIN register */
-        #define CRANKSHAFT ((pin) {&PINF, 7, A0})   // Pin A0 (PF7)
-        #define CAMSHAFT   ((pin) {&PINF, 6, A1})   // Pin A1 (PF6)
+        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINC, 0, A0})     // Pin A0 (PF7)
+        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINC, 1, A1})       // Pin A1 (PF6)
 
-        #define THERMISTOR ((pin) {&PINF, 0, A5})   // Pin A5 (PF0)
+        #define THERMISTOR ((pin) {"THERMISTOR", &PINC, 5, A5})     // Pin A5 (PF0)
 
         /* Actuator pins: Write-only therefore PORT register */
 
-        #define INJECTOR_1 ((pin) {&PORTC, 6, 5})   // Pin D5 (PC6)
-        #define INJECTOR_2 ((pin) {&PORTD, 7, 6})   // Pin D6 (PD7)
-        #define INJECTOR_3 ((pin) {&PORTE, 6, 7})   // Pin D7 (PE6)
-        #define INJECTOR_4 ((pin) {&PORTB, 4, 8})   // Pin D8 (PB4)
+        #define INJECTOR_1 ((pin) {"INJECTOR 1", &PORTB, 2, 10})    // Pin D5 (PC6)
+        #define INJECTOR_2 ((pin) {"INJECTOR 2", &PORTB, 3, 11})    // Pin D6 (PD7)
+        #define INJECTOR_3 ((pin) {"INJECTOR 3", &PORTB, 4, 12})    // Pin D7 (PE6)
+        #define INJECTOR_4 ((pin) {"INJECTOR 4", &PORTB, 5, 13})    // Pin D8 (PB4)
 
-        #define COIL_1 ((pin) {&PORTD, 6, 12})      // Pin D12 (PD6)
-        #define COIL_2 ((pin) {&PORTB, 7, 11})      // Pin D11 (PB7)
-        #define COIL_3 ((pin) {&PORTB, 6, 10})      // Pin D10 (PB6)
-        #define COIL_4 ((pin) {&PORTB, 5, 9})       // Pin D9 (PB5)
+        #define COIL_1 ((pin) {"COIL 1", &PORTB, 2, 10})            // Pin D12 (PD6)
+        #define COIL_2 ((pin) {"COIL 2", &PORTB, 3, 11})            // Pin D11 (PB7)
+        #define COIL_3 ((pin) {"COIL 3", &PORTB, 4, 12})            // Pin D10 (PB6)
+        #define COIL_4 ((pin) {"COIL 4", &PORTB, 5, 13})            // Pin D9 (PB5)
     #else
         /* Sensor pins: Read-only therefore PIN register */
-        #define CRANKSHAFT ((pin) {&PINF, 7, A0})   // Pin A0 (PF7)
-        #define CAMSHAFT   ((pin) {&PINF, 6, A1})   // Pin A1 (PF6)
+        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINF, 7, A0})     // Pin A0 (PF7)
+        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINF, 6, A1})       // Pin A1 (PF6)
 
-        #define THERMISTOR ((pin) {&PINF, 0, A5})   // Pin A5 (PF0)
+        #define THERMISTOR ((pin) {"THERMISTOR", &PINF, 0, A5})     // Pin A5 (PF0)
 
         /* Actuator pins: Write-only therefore PORT register */
 
-        #define INJECTOR_1 ((pin) {&PORTC, 6, 5})   // Pin D5 (PC6)
-        #define INJECTOR_2 ((pin) {&PORTD, 7, 6})   // Pin D6 (PD7)
-        #define INJECTOR_3 ((pin) {&PORTE, 6, 7})   // Pin D7 (PE6)
-        #define INJECTOR_4 ((pin) {&PORTB, 4, 8})   // Pin D8 (PB4)
+        #define INJECTOR_1 ((pin) {"INJECTOR 1", &PORTC, 6, 5})     // Pin D5 (PC6)
+        #define INJECTOR_2 ((pin) {"INJECTOR 2", &PORTD, 7, 6})     // Pin D6 (PD7)
+        #define INJECTOR_3 ((pin) {"INJECTOR 3", &PORTE, 6, 7})     // Pin D7 (PE6)
+        #define INJECTOR_4 ((pin) {"INJECTOR 4", &PORTB, 4, 8})     // Pin D8 (PB4)
 
-        #define COIL_1 ((pin) {&PORTD, 6, 12})      // Pin D12 (PD6)
-        #define COIL_2 ((pin) {&PORTB, 7, 11})      // Pin D11 (PB7)
-        #define COIL_3 ((pin) {&PORTB, 6, 10})      // Pin D10 (PB6)
-        #define COIL_4 ((pin) {&PORTB, 5, 9})       // Pin D9 (PB5)
+        #define COIL_1 ((pin) {"COIL 1", &PORTD, 6, 12})            // Pin D12 (PD6)
+        #define COIL_2 ((pin) {"COIL 2", &PORTB, 7, 11})            // Pin D11 (PB7)
+        #define COIL_3 ((pin) {"COIL 3", &PORTB, 6, 10})            // Pin D10 (PB6)
+        #define COIL_4 ((pin) {"COIL 4", &PORTB, 5, 9})             // Pin D9 (PB5)
     #endif
 
     // The change in crankshaft angle between IPG pulses
-    #define IPG_PULSE_ANGLE 30
+    #define IPG_PULSE_ANGLE         30
 
     /*
         The number of IPG pulses between the last and current 
         CPG pulses, based on the camshaft angle.
     */
 
-    #define START_OF_CYCLE_PULSES 12
-    #define REFERENCE_PULSES 2
-    #define MID_CYCLE_PULSES 10
+    #define START_OF_CYCLE_PULSES   12
+    #define REFERENCE_PULSES        2
+    #define MID_CYCLE_PULSES        10
 
-    #define SUPPLY 5
-    #define ADC_MAX 1024
+    #define SUPPLY                  5
+    #define ADC_MAX                 1024
 
     /*
     Internal temperature given by analog-in voltage, based off thermistor datasheet.
@@ -84,6 +86,9 @@
                            + (15.53 * pow(V, 4)) - (13.148 * pow(V, 3)) \
                            - (36.986 * pow(V, 2)) + (91.9 * V) - 54.71)
 
+    #ifdef __cplusplus
+    extern "C" {
+    #endif
 
     /*
         Definition for engine type. This is a struct that contains important 
@@ -98,8 +103,8 @@
           engine to run fully.
     */
     typedef struct engine {
-        int crank;
-        float speed, temp;
+        int crank, temp;
+        float speed;
         bool is_running;
 
         pin coils[4], injs[4];
@@ -118,16 +123,12 @@
 
     void shutdown(engine* e);
 
-    void charge_coil(engine* e, char i);
-    void discharge_coil(engine* e, char i);
+    char pin_state(pin *target);
 
-    void open_injector(engine* e, char i);
-    void close_injector(engine* e, char i);
+    void open_circuit(pin* target);
+    void close_circuit(pin* target);
 
-    char get_cpg_state(engine* e);
-    char get_ipg_state(engine* e);
-
-    float get_internal_temp(engine* e);
+    int get_internal_temp(engine* e);
 
     void update_engine_signals(engine* e);
 
@@ -177,5 +178,15 @@
         the function will return -1.
     */
     int get_true_crank_angle(char pulses);
+
+    bool within_interval(float angle, float bounds[2]);
+
+    bool should_open_circuit(float angle, float bounds[2], pin* p);
+
+    bool should_close_circuit(float angle, float bounds[2], pin* p);
+
+    #ifdef __cplusplus
+    }
+    #endif
 
 #endif

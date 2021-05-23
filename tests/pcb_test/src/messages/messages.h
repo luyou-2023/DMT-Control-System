@@ -1,5 +1,5 @@
-#ifndef PCB_MESSAGES_H
-    #define PCB_MESSAGES_H
+#ifndef PCB_TEST_MESSAGES_H
+    #define PCB_TEST_MESSAGES_H
 
     #include <Arduino.h>
     #include <stdlib.h>
@@ -37,16 +37,18 @@
     typedef char keywords[MAX_KEYWORDS][MAX_KEYWORD_LENGTH + 1];
 
     typedef struct instr {
-        int type;
+        char type;
         pin* target;
         int speed;
     } instr;
 
     #define INVALID_INSTR ((instr) {INVALID_CODE, NULL, -1})
 
+    instr get_instruction(const char* message, engine* e);
+
     void get_instruction_message(instr* i, char message[150]);
 
-    instr get_instruction(const char* message, engine* e);
+    void print_target_value(instr* i, engine* e, char* message);
 
     #ifdef __cplusplus
     }

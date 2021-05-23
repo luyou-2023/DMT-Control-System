@@ -8,10 +8,10 @@
         sensor/actuator corresponds to.
     */
 
-   #define RUN 0
-   #define TEST 1
+   #define RUN      0
+   #define TEST     1
 
-   #define PROGRAM_MODE TEST
+   #define PROGRAM_MODE RUN
 
    typedef struct pin {
        char name[15];
@@ -59,19 +59,19 @@
     #endif
 
     // The change in crankshaft angle between IPG pulses
-    #define IPG_PULSE_ANGLE 30
+    #define IPG_PULSE_ANGLE         30
 
     /*
         The number of IPG pulses between the last and current 
         CPG pulses, based on the camshaft angle.
     */
 
-    #define START_OF_CYCLE_PULSES 12
-    #define REFERENCE_PULSES 2
-    #define MID_CYCLE_PULSES 10
+    #define START_OF_CYCLE_PULSES   12
+    #define REFERENCE_PULSES        2
+    #define MID_CYCLE_PULSES        10
 
-    #define SUPPLY 5
-    #define ADC_MAX 1024
+    #define SUPPLY                  5
+    #define ADC_MAX                 1024
 
     /*
     Internal temperature given by analog-in voltage, based off thermistor datasheet.
@@ -120,8 +120,6 @@
     /* Function prototypes, some of which are yet to be defined */
 
     void init_engine(engine* e);
-
-    bool pin_is_valid(pin* p);
 
     void shutdown(engine* e);
 
