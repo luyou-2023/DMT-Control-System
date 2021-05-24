@@ -29,12 +29,18 @@ bool message_available = false;
 unsigned long counter = 0;
 
 void start_circuit(circuit* c){
+    if(c->is_pulsing) return;
+
     if(c->target && c->speed != -1){
         c->is_pulsing = true;
+    } else {
+        Serial.println("Target or speed have not been set!");
     }
 }
 
 void stop_circuit(circuit* c){
+    if(!c->is_pulsing) return;
+    
     open_circuit(c->target);
     c->is_pulsing = false;
 }
@@ -52,6 +58,7 @@ void set_circuit(instr* i, circuit* c){
 
 void setup(void){
     Serial.begin(9600);
+
     init_engine(&e);
     e.is_running = true;
 
@@ -73,9 +80,8 @@ void loop(void){
 
         instr i = get_instruction(message, &e);
 
-        char readback[150];
-        get_instruction_message(&i, readback);
-        Serial.println(readback);
+        get_instruction_message(&i, message);
+        Serial.println(message);
 
         switch(i.type){
             case START_CODE:
@@ -88,8 +94,8 @@ void loop(void){
                 set_circuit(&i, &c);
                 break;
             case GET_CODE:
-                print_target_value(&i, &e, readback);
-                Serial.println(readback);
+                print_target_value(&i, &e, message);
+                Serial.println(message);
         }
 
         counter = micros();
