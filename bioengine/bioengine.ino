@@ -34,17 +34,6 @@ bool message_available = false;
 
 bool user_run = false;
 
-void get_engine_info(engine* e, char message[150]){
-    int speed_rpm = (int) (pow(10, 6) * 60 * e->speed) / 360;
-    sprintf(message, "engine status:\n    crank angle: %i deg\n    speed: %i RPM\n   temp: %i deg C\n    is running: %b\n", 
-        e->crank, speed_rpm, e->temp, e->is_running);
-}
-
-void get_timing_info(timings* t, char message[150]){
-    sprintf(message, "timings:\n    target RPM: %i\n    spark: ~%i to ~%i deg\n    fuel: ~%i to ~%i deg\n    is valid: %b\n",
-        t->o->speed, (int) t->spark[0], (int) t->spark[1], (int) t->fuel[0], (int) t->fuel[1], t->is_valid);
-}
-
 void setup(void){
     // Open Serial Communication
     Serial.begin(9600);

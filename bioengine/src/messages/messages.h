@@ -5,7 +5,7 @@
     #include <stdlib.h>
 
     #include "../control_system/control_system.h"
-    //#include "../engine_map/engine_map.h"
+    #include "../engine_map/engine_map.h"
 
     #define SPEED_FLAG          "--RPM"
 

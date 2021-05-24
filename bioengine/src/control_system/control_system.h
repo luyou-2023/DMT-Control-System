@@ -20,7 +20,7 @@
        int pin;
    } pin;
 
-    #if PROGRAM_MODE == TEST
+    #if PROGRAM_MODE == RUN
         /* Sensor pins: Read-only therefore PIN register */
         #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINC, 0, A0})     // Pin A0 (PF7)
         #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINC, 1, A1})       // Pin A1 (PF6)

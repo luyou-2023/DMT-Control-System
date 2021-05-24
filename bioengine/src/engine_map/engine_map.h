@@ -47,9 +47,9 @@
     */
 
    // The firing order of the engine cylinders (1-4-2-3)
-    extern int cylinder_phases[4] = {0, 180, 270, 90};
+    static const int cylinder_phases[4] = {0, 180, 270, 90};
 
-    extern operating_point operating_map[7] = {
+    static const operating_point operating_map[7] = {
         {1000,  7.50,  4.15},
         {2000, 15.00,  9.57},
         {3000, 20.00, 23.45},
