@@ -1,14 +1,12 @@
-#ifndef PCB_MESSAGES_H
-    #define PCB_MESSAGES_H
+#ifndef ENGINE_SIMULATOR_MESSAGES_H
+    #define ENGINE_SIMULATOR_MESSAGES_H
 
     #include <Arduino.h>
     #include <stdlib.h>
     #include <stdio.h>
 
-    #include "../control_system/control_system.h"
-    #include "../engine_map/engine_map.h"
-
-    #define SPEED_FLAG          "--RPM"
+    #define TEMP_FLAG           "--TEMP"
+    #define SPEED_FLAG          "--SPEED"
 
     #define INVALID_KEYWORD     "INVALID"
     #define START_KEYWORD       "START"
@@ -34,19 +32,15 @@
     typedef char keywords[MAX_KEYWORDS][MAX_KEYWORD_LENGTH + 1];
 
     typedef struct instr {
-        int type;
-        int speed;
+        char type;
+        int speed, temp;
     } instr;
 
-    #define INVALID_INSTR ((instr) {INVALID_CODE, -1})
+    #define INVALID_INSTR ((instr) {INVALID_CODE, -1, -1})
 
     instr get_instruction(const char* message);
 
     void get_instruction_message(instr* i, char message[150]);
-
-    void get_engine_info(engine* e, char message[150]);
-
-    void get_timing_info(timings* t, char message[150]);
 
     #ifdef __cplusplus
     }

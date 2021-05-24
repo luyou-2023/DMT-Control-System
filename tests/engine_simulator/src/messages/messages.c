@@ -1,6 +1,6 @@
 #include "messages.h"
 
-void get_message_keywords(const char message[], keywords kws){
+void get_message_keywords(const char* message, keywords kws){
     if(!message || !kws) return;
 
     size_t i = 0, j = 0, k = 0;
@@ -44,12 +44,12 @@ int get_flag_index(keywords k, char* flag){
 }
 
 int get_flag_value(keywords k, char* flag){
-    int i = get_flag_index(k, SPEED_FLAG);
+    int i = get_flag_index(k, flag);
 
     if(i == -1) return -1;
     
     long v = strtol(k[i + 1], NULL, 0);
-    return v != 0 && v < INT16_MAX ? (int) v : -1;
+    return v > 0 && v < INT16_MAX ? (int) v : -1;
 }
 
 instr get_instruction(const char* message){
@@ -62,12 +62,14 @@ instr get_instruction(const char* message){
     return (instr) {
         .type = get_type(kws),
         .speed = get_flag_value(kws, SPEED_FLAG),
+        .temp = get_flag_value(kws, TEMP_FLAG)
     };
 }
 
 void get_instruction_message(instr* i, char message[150]){
     char type_name[10] = INVALID_KEYWORD;
     char speed_string[50] = "not given";
+    char temp_string[50] = "not given";
 
     switch(i->type){
         case START_CODE:
@@ -84,9 +86,13 @@ void get_instruction_message(instr* i, char message[150]){
     }
 
     if(i->type == SET_CODE && i->speed != -1){
-        sprintf(speed_string, "%i rpm", i->speed);
+        sprintf(speed_string, "%i RPM", i->speed);
     }
 
-    sprintf(message, "\nnew instruction:\n    type: %s\n    speed: %s\n", 
-        type_name, speed_string);
+    if(i->type == SET_CODE && i->temp != -1){
+        sprintf(temp_string, "%i deg C", i->temp);
+    }
+
+    sprintf(message, "\nnew instruction:\n    type: %s\n    speed: %s\n    temp: %s\n", 
+        type_name, speed_string, temp_string);
 }

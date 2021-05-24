@@ -74,7 +74,11 @@ pin* get_target(keywords k, engine* e){
 
 long get_speed(keywords k){
     int i = get_flag_index(k, SPEED_FLAG);
-    return i != -1 ? strtol(k[i + 1], NULL, 0) : -1;
+    if(i == -1) return -1;
+
+    long s = strtol(k[i + 1], NULL, 0);
+
+    return s > 0 && s < INT16_MAX ? (int) s : -1;
 }
 
 instr get_instruction(const char* message, engine* e){

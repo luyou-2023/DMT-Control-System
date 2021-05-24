@@ -2,6 +2,7 @@
     #define ENGINE_MAP_H
 
     #include <Arduino.h>
+    #include <stdio.h>
 
     // Library containing basic methods for opening/closing circuits or measuring pulses
     #include "../control_system/control_system.h"
@@ -9,6 +10,7 @@
     // The duration a coil should charge for in microseconds
     // This needs to be replaced with a timer interrupt for greater accuracy
     #define DWELL_TIME 2000
+
     // The crank angle at which fuel injectors will open
     #define MIN_FUEL_START_ANGLE 10
     #define MAX_FUEL_END_ANGLE 90
@@ -74,6 +76,8 @@
     int set_operating_point(operating_point* o, unsigned int target_speed);
 
     int set_engine_timings(timings* t, const operating_point* o, const engine* e);
+
+    void get_timing_info(timings* t, char message[150]);
 
     #ifdef __cplusplus
     }

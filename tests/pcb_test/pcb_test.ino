@@ -4,55 +4,49 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 
-#define MESSAGE_SIZE (MAX_KEYWORDS * MAX_KEYWORD_LENGTH)
-
-typedef struct circuit {
-    unsigned long pulse_width;
-    unsigned long speed;
-    pin* target;
-    bool is_pulsing;
-} circuit;
-
-circuit c = {
-    .pulse_width = 0,
-    .speed = 0,
-    .target = NULL,
-    .is_pulsing = false
-};
-
 engine e;
 
 size_t buffer = 0;
 char message[MESSAGE_SIZE];
 bool message_available = false;
 
-unsigned long counter = 0;
+unsigned long pulse_width = 0;
 
-void start_circuit(circuit* c){
-    if(c->is_pulsing) return;
+unsigned int speed = 0;
+bool is_pulsing = false;
 
-    if(c->target && c->speed != -1){
-        c->is_pulsing = true;
+pin* target = NULL;
+
+unsigned long counter;
+
+void start_circuit(void){
+    Serial.println("Starting pulses.\n");
+    if(target && speed != 0){
+        is_pulsing = true;
+        counter = micros();
     } else {
-        Serial.println("Target or speed have not been set!");
+        Serial.println("Target or speed have not been set!\n");
+        Serial.println("Stopping pulses.\n");
+        is_pulsing = false;
     }
 }
 
-void stop_circuit(circuit* c){
-    if(!c->is_pulsing) return;
-    
-    open_circuit(c->target);
-    c->is_pulsing = false;
+void stop_circuit(void){
+    Serial.println("Stopping pulses.\n");
+
+    open_circuit(target);
+    is_pulsing = false;
 }
 
-void set_circuit(instr* i, circuit* c){
+void set_circuit(instr* i){
+    Serial.println("Setting parameters.\n");
     if(i->speed != -1){
-        c->speed = i->speed;
-        c->pulse_width = pow(10, 6) * 2 * 60 / c->speed;
+        speed = i->speed;
+        pulse_width = pow(10, 6) * 2 * 60 / speed;
     }
 
     if(i->target){
-        c->target = i->target;
+        target = i->target;
     }
 }
 
@@ -62,7 +56,7 @@ void setup(void){
     init_engine(&e);
     e.is_running = true;
 
-    Serial.println("Setup successful");
+    Serial.println("Setup successful\n");
 }
 
 void loop(void){
@@ -85,31 +79,31 @@ void loop(void){
 
         switch(i.type){
             case START_CODE:
-                start_circuit(&c);
+                start_circuit();
                 break;
             case STOP_CODE:
-                stop_circuit(&c);
+                stop_circuit();
                 break;
             case SET_CODE:
-                set_circuit(&i, &c);
+                stop_circuit();
+                set_circuit(&i);
+                start_circuit();
                 break;
             case GET_CODE:
                 print_target_value(&i, &e, message);
                 Serial.println(message);
         }
 
-        counter = micros();
         message_available = false;
     }
     
-    if((micros() - counter > c.pulse_width) && c.is_pulsing){
-        if(pin_state(c.target) == HIGH){
-            open_circuit(c.target);
+    if(is_pulsing && micros() - counter > pulse_width){
+        if(pin_state(target)){
+            open_circuit(target);
         } else {
-            close_circuit(c.target);
+            close_circuit(target);
         }
 
         counter = micros();
     }
-
 }

@@ -61,7 +61,7 @@ void loop(void){
     } else if(message_available){
         Serial.print(message);
 
-        instr i = get_instruction(message, &e);
+        instr i = get_instruction(message);
 
         switch(i.type){
             case START_CODE:

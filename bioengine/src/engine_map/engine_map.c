@@ -45,3 +45,8 @@ int set_engine_timings(timings* t, const operating_point* o, const engine* e){
 
     return 0;
 }
+
+void get_timing_info(timings* t, char message[150]){
+    sprintf(message, "timings:\n    target RPM: %i\n    spark: ~%i to ~%i deg\n    fuel: ~%i to ~%i deg\n    is valid: %b\n",
+        t->o->speed, (int) t->spark[0], (int) t->spark[1], (int) t->fuel[0], (int) t->fuel[1], t->is_valid);
+}

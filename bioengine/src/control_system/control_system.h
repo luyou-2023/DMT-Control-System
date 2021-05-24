@@ -2,16 +2,14 @@
     #define CONTROL_SYSTEM_H
 
     #include <Arduino.h>
+    #include <stdio.h>
 
     /*
         Macros defining the pins on the Arduino each 
         sensor/actuator corresponds to.
     */
 
-   #define RUN      0
-   #define TEST     1
-
-   #define PROGRAM_MODE TEST
+   //#define PROGRAM_TEST
 
    typedef struct pin {
        char name[15];
@@ -20,7 +18,7 @@
        int pin;
    } pin;
 
-    #if PROGRAM_MODE == RUN
+    #ifdef PROGRAM_TEST
         /* Sensor pins: Read-only therefore PIN register */
         #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINC, 0, A0})     // Pin A0 (PF7)
         #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINC, 1, A1})       // Pin A1 (PF6)

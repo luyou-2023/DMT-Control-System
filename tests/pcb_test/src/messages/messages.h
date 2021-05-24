@@ -34,6 +34,8 @@
     #define MAX_KEYWORDS        10
     #define MAX_KEYWORD_LENGTH  15
 
+    #define MESSAGE_SIZE (MAX_KEYWORDS * MAX_KEYWORD_LENGTH)
+
     typedef char keywords[MAX_KEYWORDS][MAX_KEYWORD_LENGTH + 1];
 
     typedef struct instr {
