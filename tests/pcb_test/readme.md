@@ -33,6 +33,8 @@ Click __Upload__ to install the program on the Arduino. If the build fails pleas
 
 When the program has been uploaded, Click on the __Serial Monitor__ from the __Tools__ dropdown menu. This will allow you to communicate and instruct the Arduino to open/close different circuits.
 
+__Ensure that the Serial messages are sent with a newline at the end.__ This is how the Arduino knows a message is available. This can be selected from the dropdown menu at the bottom of the serial monitor.
+
 The instructions passed to the Arduino have a bash-style syntax:
 
 ```bash
