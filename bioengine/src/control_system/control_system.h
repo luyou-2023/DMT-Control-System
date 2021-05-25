@@ -9,7 +9,7 @@
         sensor/actuator corresponds to.
     */
 
-   //#define PROGRAM_TEST
+   #define PROGRAM_TEST
 
    typedef struct pin {
        char name[15];

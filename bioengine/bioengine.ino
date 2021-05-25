@@ -15,6 +15,12 @@
 #define UPDATE_TIMINGS_CYCLES 1
 #define UPDATE_TEMP_CYCLES 50
 
+//#define SPEED_TEST
+
+#ifdef SPEED_TEST
+    #define SPEED_TEST_CYL 0
+#endif
+
 // Comment
 operating_point o;
 // Comment
@@ -33,6 +39,14 @@ char message[MESSAGE_SIZE];
 bool message_available = false;
 
 bool user_run = false;
+
+void print_circuit_change(char* event_name, int cylinder_number, float a, char* message){
+    int angle_integer = (int) a;
+    int angle_decimal = (int) 10 * (a - angle_integer);
+
+    sprintf(message, "%s %i at %i.%i deg\n", 
+        event_name, cylinder_number, angle_integer, angle_decimal);
+}
 
 void setup(void){
     // Open Serial Communication
@@ -151,19 +165,39 @@ void loop(void){
     // Estimate the crankshaft angle between pulses using linear interpolation
     float crank = estimate_angle(&e, last_pulse);
     
-    if(t.is_valid){
-        for(size_t c = 0; c < 4; c++){
+    if(e.is_running){
+        for(int c = 0; c < 4; c++){
             float a = fmod(crank + cylinder_phases[c], 720);
             if(should_open_circuit(a, t.spark, &(e.coils[c]))){
                 open_circuit(&(e.coils[c]));
+                #ifdef SPEED_TEST
+                if(c == SPEED_TEST_CYL){
+                    print_circuit_change("DISCHARGE COIL", c, a, message);
+                }
+                #endif
             } else if(should_close_circuit(a, t.spark, &(e.coils[c]))){
                 close_circuit(&(e.coils[c]));
+                #ifdef SPEED_TEST
+                if(c == SPEED_TEST_CYL){
+                    print_circuit_change("CHARGE COIL", c, a, message);
+                }
+                #endif
             }
 
             if(should_open_circuit(a, t.fuel, &(e.injs[c]))){
                 open_circuit(&(e.injs[c]));
+                #ifdef SPEED_TEST
+                if(c == SPEED_TEST_CYL){
+                    print_circuit_change("CLOSE INJECTOR", c, a, message);
+                }
+                #endif
             } else if(should_close_circuit(a, t.fuel, &(e.injs[c]))){
                 close_circuit(&(e.injs[c]));
+                #ifdef SPEED_TEST
+                if(c == SPEED_TEST_CYL){
+                    print_circuit_change("OPEN INJECTOR", c, a, message);
+                }
+                #endif
             }
         }
     }

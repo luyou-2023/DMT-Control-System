@@ -5,7 +5,13 @@
 
 #define IPG_HIGH_ANGLE 15
 
-#define THERMISTOR_VOLTAGE(T) ((float) T * 0.05)
+#define THERMISTOR_VOLTAGE(T) \
+    - (2 * pow(10, -12) * pow(T, 6)) \
+    + (6 * pow(10, -10) * pow(T, 5)) \
+    - (3 * pow(10, -8) * pow(T, 4)) \
+    - (6 * pow(10, -6) * pow(T, 3)) \
+    + (4 * pow(10, -4) * pow(T, 2)) \
+    + (0.0462 * T) + 1.1977
 
 #define SUPPLY 5
 
