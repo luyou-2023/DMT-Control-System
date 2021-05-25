@@ -23,7 +23,7 @@ int set_operating_point(operating_point* o, unsigned int target_speed){
 }
 
 int set_engine_timings(timings* t, const operating_point* o, const engine* e){
-    if(!o || !e){
+    if(!o || !e || e->speed == 0){
         t->is_valid = false;
         return 1;
     }
@@ -36,7 +36,7 @@ int set_engine_timings(timings* t, const operating_point* o, const engine* e){
     t->fuel[0] = MIN_FUEL_START_ANGLE;
     t->fuel[1] = o->inj_duration;
 
-    if(t->fuel[1] > MAX_FUEL_END_ANGLE){
+    if(t->fuel[1] > MAX_FUEL_END_ANGLE || t->spark[0] < MIN_CHARGE_ANGLE){
         t->is_valid = false;
         return 1;
     }
@@ -47,6 +47,10 @@ int set_engine_timings(timings* t, const operating_point* o, const engine* e){
 }
 
 void get_timing_info(timings* t, char message[150]){
-    sprintf(message, "timings:\n    target RPM: %i\n    spark: ~%i to ~%i deg\n    fuel: ~%i to ~%i deg\n    is valid: %b\n",
-        t->o->speed, (int) t->spark[0], (int) t->spark[1], (int) t->fuel[0], (int) t->fuel[1], t->is_valid);
+    if(!t->is_valid){
+        sprintf(message, "timings not valid.\n");
+    } else {
+        sprintf(message, "timings:\n    target RPM: %i\n    spark: ~%i to ~%i deg\n    fuel: ~%i to ~%i deg\n    is valid: %s\n",
+            t->o->speed, (int) t->spark[0], (int) t->spark[1], (int) t->fuel[0], (int) t->fuel[1], t->is_valid ? "true" : "false");
+    }
 }

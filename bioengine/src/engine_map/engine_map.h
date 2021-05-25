@@ -13,7 +13,9 @@
 
     // The crank angle at which fuel injectors will open
     #define MIN_FUEL_START_ANGLE 10
-    #define MAX_FUEL_END_ANGLE 90
+    #define MAX_FUEL_END_ANGLE 160
+
+    #define MIN_CHARGE_ANGLE 180
 
     // The size of the fuel/ignition map
     #define MAP_SIZE 7

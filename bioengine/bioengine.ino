@@ -22,7 +22,7 @@
 #endif
 
 // Comment
-operating_point o;
+operating_point* o;
 // Comment
 timings t;
 // Struct containing information about the state of the engine
@@ -56,7 +56,11 @@ void setup(void){
     init_engine(&e);
     init_timings(&t);
 
-    set_operating_point(&o, INITIAL_TARGET_RPM);
+    set_operating_point(o, INITIAL_TARGET_RPM);
+
+
+
+    Serial.println("Setup successful.");
 }
 
 void loop(void){
@@ -77,6 +81,9 @@ void loop(void){
 
         instr i = get_instruction(message);
 
+        get_instruction_message(&i, message);
+        Serial.println(message);
+
         switch(i.type){
             case START_CODE:
                 user_run = true;
@@ -93,11 +100,11 @@ void loop(void){
                 Serial.println(message);
                 break;
             case SET_CODE:
-                int err = set_operating_point(&o, i.speed);
+                int err = set_operating_point(o, i.speed);
                 if(err) Serial.println("Could not find target RPM");
                 else {
-                    err = set_engine_timings(&t, &o, &e);
-                    if(err){
+                    err = set_engine_timings(&t, o, &e);
+                    if(err && e.is_running){
                         shutdown(&e);
                         user_run = false;
                         Serial.println("Timings are invalid.");
@@ -105,9 +112,6 @@ void loop(void){
                     }
                 }
         }
-
-        get_instruction_message(&i, message);
-        Serial.println(message);
 
         message_available = false;
     }
@@ -124,11 +128,11 @@ void loop(void){
                 Serial.println("Shutting Down...");
             } else {
                 set_crank(&e, true_crank);
-                if(user_run && t.is_valid){
-                    e.is_running = true;
-                    Serial.println("Control System is running.");
-                }
+                Serial.println("Crankshaft angle determined.");
             }
+        } else if(user_run && t.is_valid){
+            e.is_running = true;
+            Serial.println("Control System is running.");
         }
 
         pulses = 0;
@@ -151,7 +155,7 @@ void loop(void){
 
     // Set the operating point for the correct timings every revolution of the crank
     if(tacho % UPDATE_TIMINGS_CYCLES == 0){
-        set_engine_timings(&t, &o, &e);
+        set_engine_timings(&t, o, &e);
     }
 
     if(tacho % UPDATE_TEMP_CYCLES == 0){
@@ -159,6 +163,8 @@ void loop(void){
             shutdown(&e);
             Serial.println("Internal temperature exceeded maximum.");
             Serial.println("Shutting Down...");
+            get_engine_info(&e, message);
+            Serial.println(message);
         }
     }
 

@@ -13,7 +13,7 @@
     + (4 * pow(10, -4) * pow(T, 2)) \
     + (0.0462 * T) + 1.1977
 
-#define SUPPLY 5
+#define SUPPLY ((double) 5.0)
 
 const int cpg_pulse_angles[3] = {0, 60, 360};
 
@@ -54,7 +54,9 @@ void close_circuit(pin* target){
 }
 
 void set_temperature_pwm(void){
-    int temp_pwm = 255 * THERMISTOR_VOLTAGE(temp) / SUPPLY;
+    double temp_supply_ratio = (THERMISTOR_VOLTAGE((double) temp)) / 5.0;
+    int temp_pwm = temp_supply_ratio * 255;
+
     analogWrite(temp_pin.pin, temp_pwm);
 }
 
@@ -99,7 +101,7 @@ void set_simulation(instr* i){
 }
 
 void print_simulator_info(char* message){
-    float voltage = THERMISTOR_VOLTAGE((float) temp);
+    float voltage = THERMISTOR_VOLTAGE((double) temp);
     int voltage_integer = (int) voltage;
     int voltage_decimal = (voltage - voltage_integer) * 10;
 

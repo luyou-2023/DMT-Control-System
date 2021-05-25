@@ -172,6 +172,7 @@ bool should_close_circuit(float angle, float bounds[2], pin* p){
 
 void get_engine_info(engine* e, char message[150]){
     int speed_rpm = (int) (pow(10, 6) * 60 * e->speed) / 360;
-    sprintf(message, "engine status:\n    crank angle: %i deg\n    speed: %i RPM\n   temp: %i deg C\n    is running: %b\n", 
-        e->crank, speed_rpm, e->temp, e->is_running);
+
+    sprintf(message, "engine status:\n    crank angle: %i deg\n    speed: %i RPM\n   temp: %i deg C\n    is running: %s\n", 
+        e->crank, speed_rpm, e->temp, e->is_running ? "true" : "false");
 }
