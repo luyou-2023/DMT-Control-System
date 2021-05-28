@@ -11,19 +11,18 @@ void init_timings(timings* t){
     t->is_valid = false;
 }
 
-int set_operating_point(operating_point* o, unsigned int target_speed){
+operating_point get_operating_point(unsigned int target_speed){
     for(size_t i = 0; i < MAP_SIZE; i++){
         if(target_speed == operating_map[i].speed){
-            o = &(operating_map[i]);
-            return 0;
+            return operating_map[i];
         }
     }
 
-    return 1;
+    return INVALID_OPERATING_POINT;
 }
 
 int set_engine_timings(timings* t, const operating_point* o, const engine* e){
-    if(!o || !e || e->speed == 0){
+    if(!o || !e || e->rpm == 0){
         t->is_valid = false;
         return 1;
     }
@@ -34,7 +33,7 @@ int set_engine_timings(timings* t, const operating_point* o, const engine* e){
     t->spark[0] = t->spark[1] - (e->speed * DWELL_TIME);
 
     t->fuel[0] = MIN_FUEL_START_ANGLE;
-    t->fuel[1] = o->inj_duration;
+    t->fuel[1] = MIN_FUEL_START_ANGLE + o->inj_duration;
 
     if(t->fuel[1] > MAX_FUEL_END_ANGLE || t->spark[0] < MIN_CHARGE_ANGLE){
         t->is_valid = false;
@@ -44,6 +43,22 @@ int set_engine_timings(timings* t, const operating_point* o, const engine* e){
     t->is_valid = true;
 
     return 0;
+}
+
+void new_operating_point(unsigned int rpm, operating_point* o, timings* t, engine* e, char* message){
+    *o = get_operating_point(rpm);
+
+    if(o->speed == -1){
+        sprintf(message, "Could not find target RPM.\n");
+    }
+
+    int err = set_engine_timings(t, o, e);
+
+    if(err){
+        sprintf(message, "Timings are invalid.\n");
+    } else {
+        sprintf(message, "Engine operating point and timings updated.\n");
+    }
 }
 
 void get_timing_info(timings* t, char message[150]){

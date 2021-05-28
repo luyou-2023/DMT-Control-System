@@ -6,7 +6,6 @@
     #include <stdio.h>
 
     #include "../control_system/control_system.h"
-    #include "../engine_map/engine_map.h"
 
     #define SPEED_FLAG          "--RPM"
 
@@ -43,10 +42,6 @@
     instr get_instruction(const char* message);
 
     void get_instruction_message(instr* i, char message[150]);
-
-    void get_engine_info(engine* e, char message[150]);
-
-    void get_timing_info(timings* t, char message[150]);
 
     #ifdef __cplusplus
     }

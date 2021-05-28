@@ -38,6 +38,8 @@
         float inj_duration;
     } operating_point;
 
+    #define INVALID_OPERATING_POINT ((operating_point) {-1, -1, -1})
+
     typedef struct timings {
         float spark[2];
         float fuel[2];
@@ -51,9 +53,9 @@
     */
 
    // The firing order of the engine cylinders (1-4-2-3)
-    static const int cylinder_phases[4] = {0, 180, 270, 90};
+    const int cylinder_phases[4] = {0, 180, 270, 90};
 
-    static const operating_point operating_map[7] = {
+    const operating_point operating_map[7] = {
         {1000,  7.50,  4.15},
         {2000, 15.00,  9.57},
         {3000, 20.00, 23.45},
@@ -75,9 +77,9 @@
 
     void init_timings(timings* t);
 
-    int set_operating_point(operating_point* o, unsigned int target_speed);
-
     int set_engine_timings(timings* t, const operating_point* o, const engine* e);
+
+    void new_operating_point(unsigned int rpm, operating_point* o, timings* t, engine* e, char* message);
 
     void get_timing_info(timings* t, char message[150]);
 

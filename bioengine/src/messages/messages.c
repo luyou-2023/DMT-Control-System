@@ -2,9 +2,7 @@
 
 void get_message_keywords(const char message[], keywords kws){
     if(!message || !kws) return;
-
     size_t i = 0, j = 0, k = 0;
-
     while(message[i] != '\n' && k != MAX_KEYWORDS){
         if(message[i] == ' '){
             if(i > 0 && j > 0){

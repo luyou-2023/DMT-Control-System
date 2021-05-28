@@ -34,16 +34,12 @@ void init_engine(engine* e){
 
     e->crank = 0;
 
-    e->speed = (float) 0;
+    e->speed = 0;
+    e->rpm = 0;
+
     e->temp = get_internal_temp(e);
 
     e->is_running = false;
-
-    e->_ipg_state = 0;
-    e->_cpg_state = 0;
-
-    e->_prev_ipg_state = 0;
-    e->_prev_cpg_state = 0;
 }
 
 void shutdown(engine* e){
@@ -51,6 +47,8 @@ void shutdown(engine* e){
         open_circuit(&(e->injs[i]));
         open_circuit(&(e->coils[i]));
     }
+
+    e->is_running = false;
 }
 
 char pin_state(pin* target){
@@ -72,24 +70,8 @@ int get_internal_temp(engine* e){
     return e->temp;
 }
 
-void update_engine_signals(engine* e){
-    e->_prev_ipg_state = e->_ipg_state;
-    e->_prev_cpg_state = e->_cpg_state;
-
-    e->_ipg_state = pin_state(&(e->ipg));
-    e->_cpg_state = pin_state(&(e->cpg));
-}
-
-bool cpg_pulsed(engine* e){
-    return e->_cpg_state && !e->_prev_cpg_state;
-}
-
-bool ipg_pulsed(engine* e){
-    return e->_ipg_state && !e->_prev_ipg_state;
-}
-
 void set_crank(engine* e, int angle){
-    e->crank = angle;
+    e->crank = angle % 720;
 }
 
 void increment_crank(engine* e, int angle){
@@ -105,7 +87,8 @@ void increment_crank(engine* e, int angle){
     speed is approximated over several pulses.
 */
 void update_velocity(engine* e, unsigned long pulse_width){
-    e->speed = IPG_PULSE_ANGLE / pulse_width;
+    e->speed = (float) IPG_PULSE_ANGLE / pulse_width;
+    e->rpm = pow(10, 6) * e->speed * 60 / 360;
 }
 
 /*
@@ -121,14 +104,15 @@ void update_velocity(engine* e, unsigned long pulse_width){
     Note that angle change cannot exceed IPG_PULSE_ANGLE, as a new 
     pulse will have been observed.
 */
-float estimate_angle(engine* e, unsigned long last_pulse){
+float estimate_angle(engine* e, unsigned long current_pulse){
     if(!e) return -1;
 
-    float angle_change = e->speed * (micros() - last_pulse);
-
+    return e->crank + (e->speed * (micros() - current_pulse));
+    /*
     return angle_change < IPG_PULSE_ANGLE
         ? e->crank + angle_change
         : e->crank + IPG_PULSE_ANGLE;
+    */
 }
 
 /*
@@ -171,8 +155,6 @@ bool should_close_circuit(float angle, float bounds[2], pin* p){
 }
 
 void get_engine_info(engine* e, char message[150]){
-    int speed_rpm = (int) (pow(10, 6) * 60 * e->speed) / 360;
-
-    sprintf(message, "engine status:\n    crank angle: %i deg\n    speed: %i RPM\n   temp: %i deg C\n    is running: %s\n", 
-        e->crank, speed_rpm, e->temp, e->is_running ? "true" : "false");
+    sprintf(message, "engine status:\n    crank angle: %i deg\n    speed: %i RPM\n    temp: %i deg C\n    is running: %s\n", 
+        e->crank, e->rpm, e->temp, e->is_running ? "true" : "false");
 }

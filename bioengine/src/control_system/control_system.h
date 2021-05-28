@@ -20,8 +20,8 @@
 
     #ifdef PROGRAM_TEST
         /* Sensor pins: Read-only therefore PIN register */
-        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PINC, 0, A0})     // Pin A0 (PF7)
-        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PINC, 1, A1})       // Pin A1 (PF6)
+        #define CRANKSHAFT ((pin) {"CRANKSHAFT", &PIND, 2, 2})     // Pin A0 (PF7)
+        #define CAMSHAFT   ((pin) {"CAMSHAFT", &PIND, 3, 3})       // Pin A1 (PF6)
 
         #define THERMISTOR ((pin) {"THERMISTOR", &PINC, 5, A5})     // Pin A5 (PF0)
 
@@ -101,18 +101,15 @@
           engine to run fully.
     */
     typedef struct engine {
-        int crank, temp;
+        volatile int crank;
+        int temp, rpm;
+
         float speed;
+
         bool is_running;
 
         pin coils[4], injs[4];
         pin thermistor, cpg, ipg;
-
-        char _cpg_state;
-        char _ipg_state;
-
-        char _prev_cpg_state;
-        char _prev_ipg_state;
     } engine;
 
     /* Function prototypes, some of which are yet to be defined */
@@ -127,11 +124,6 @@
     void close_circuit(pin* target);
 
     int get_internal_temp(engine* e);
-
-    void update_engine_signals(engine* e);
-
-    bool cpg_pulsed(engine* e);
-    bool ipg_pulsed(engine* e);
 
     void set_crank(engine* e, int angle);
     void increment_crank(engine* e, int angle);
@@ -177,11 +169,11 @@
     */
     int get_true_crank_angle(char pulses);
 
-    bool within_interval(float angle, float bounds[2]);
-
     bool should_open_circuit(float angle, float bounds[2], pin* p);
 
     bool should_close_circuit(float angle, float bounds[2], pin* p);
+
+    void get_engine_info(engine* e, char message[150]);
 
     #ifdef __cplusplus
     }
