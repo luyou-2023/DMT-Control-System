@@ -5,6 +5,16 @@
 
 #define IPG_HIGH_ANGLE 15
 
+#define REGISTER PORTB
+
+#define TEMP_ADDRESS 2
+#define CPG_ADDRESS 4
+#define IPG_ADDRESS 5
+
+#define TEMP_PIN 10
+#define CPG_PIN 12
+#define IPG_PIN 13
+
 #define THERMISTOR_VOLTAGE(T) \
     - (2 * pow(10, -12) * pow(T, 6)) \
     + (6 * pow(10, -10) * pow(T, 5)) \
@@ -16,16 +26,6 @@
 #define SUPPLY ((double) 5.0)
 
 const int cpg_pulse_angles[3] = {0, 60, 360};
-
-typedef struct pin {
-    char* reg;
-    int num, pin;
-} pin;
-
-pin temp_pin = {&PORTB, 2, 10};
-
-pin cpg_pin = {&PORTB, 4, 12};
-pin ipg_pin = {&PORTB, 5, 13};
 
 size_t buffer = 0;
 char message[MESSAGE_SIZE];
@@ -41,23 +41,25 @@ bool is_running = false;
 
 unsigned long counter;
 
-char pin_state(pin* target){
-    return (*(target->reg) >> target->num) & 1;
+unsigned long last_pulse = micros();
+
+char pin_state(int address){
+    return (REGISTER >> address) & 1;
 }
 
-void open_circuit(pin* target){
-    *(target->reg) &= ~(1 << target->num);
+void open_circuit(int address){
+    REGISTER &= ~(1 << address);
 }
 
-void close_circuit(pin* target){
-    *(target->reg) |= 1 << target->num;
+void close_circuit(int address){
+    REGISTER |= 1 << address;
 }
 
 void set_temperature_pwm(void){
     double temp_supply_ratio = (THERMISTOR_VOLTAGE((double) temp)) / 5.0;
     int temp_pwm = temp_supply_ratio * 255;
 
-    analogWrite(temp_pin.pin, temp_pwm);
+    analogWrite(TEMP_PIN, temp_pwm);
 }
 
 void start_simulation(void){
@@ -77,9 +79,9 @@ void start_simulation(void){
 void stop_simulation(void){
     Serial.println("Stopping simulation.\n");
 
-    open_circuit(&cpg_pin);
-    open_circuit(&ipg_pin);
-    open_circuit(&temp_pin);
+    open_circuit(TEMP_ADDRESS);
+    open_circuit(CPG_ADDRESS);
+    open_circuit(IPG_ADDRESS);
 
     is_running = false;
 }
@@ -87,13 +89,12 @@ void stop_simulation(void){
 void set_simulation(instr* i){
     if(i->speed > 0){
         speed = i->speed;
-        float pulses_per_second = ((360 / IPG_HIGH_ANGLE) * speed / 60);
-        pulse_width = pow(10, 6) / pulses_per_second;
+        uint32_t pulses_per_second = (speed / 60) * (360 / IPG_HIGH_ANGLE);
+        pulse_width = pow(10, 6) / pulses_per_second;   
     }
 
     if(i->temp > 0){
         temp = i->temp;
-
         if(is_running){
             set_temperature_pwm();
         }
@@ -113,9 +114,10 @@ void print_simulator_info(char* message){
 void setup(void){
     Serial.begin(9600);
 
-    pinMode(temp_pin.pin, OUTPUT);
-    pinMode(cpg_pin.pin, OUTPUT);
-    pinMode(ipg_pin.pin, OUTPUT);
+    pinMode(TEMP_PIN, OUTPUT);
+
+    pinMode(CPG_PIN, OUTPUT);
+    pinMode(IPG_PIN, OUTPUT);
 
     Serial.println("Setup successful.\n");
 }
@@ -164,20 +166,23 @@ void loop(void){
 
         angle = (angle + IPG_HIGH_ANGLE) % 720;
 
-        if(angle % (2 * IPG_HIGH_ANGLE) == 0){
-            close_circuit(&ipg_pin);
-        } else {
-            open_circuit(&ipg_pin);
-        }
+        int cpg_pulse = 0;
 
-        if(pin_state(&cpg_pin)){
-            open_circuit(&cpg_pin);
+        if(pin_state(CPG_ADDRESS)){
+            open_circuit(CPG_ADDRESS);
         } else {
             for(size_t i = 0; i < 3; i++){
                 if(angle == cpg_pulse_angles[i]){
-                    close_circuit(&cpg_pin);
+                    cpg_pulse = 1;
                 }
             }
+        }
+
+        if(angle % (2 * IPG_HIGH_ANGLE) == 0){
+            REGISTER = (1 << IPG_ADDRESS) + (cpg_pulse << CPG_ADDRESS);
+
+        } else {
+            open_circuit(IPG_ADDRESS);
         }
     }
 }
