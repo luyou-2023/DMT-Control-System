@@ -16,7 +16,8 @@
 #define TIMINGS_TACHO   10
 #define TEMP_TACHO      50
 
-#define SPEED_TEST
+//#define SPEED_TEST
+//#define SHUTDOWN_TEST
 
 // Comment
 operating_point o;
@@ -100,9 +101,8 @@ void shutdown_and_print(char* cause){
 }
 
 #ifdef SPEED_TEST
-    #define SPEED_TEST_TACHO 20
+    #define REPORT_TEST_TACHO 20
     float prev_estimated_crank = 0;
-    bool update_speed_test = false;
 
     void print_angle(char* m, float d){
         int diff_integer = (int) d;
@@ -112,6 +112,14 @@ void shutdown_and_print(char* cause){
 
         Serial.println(message);
     }
+#endif
+
+#ifdef SHUTDOWN_TEST
+    #define REPORT_TEST_TACHO 1
+#endif
+
+#if defined(SPEED_TEST) || defined(SHUTDOWN_TEST)
+    bool update_test_report = false;
 #endif
 
 void setup(void){
@@ -144,17 +152,23 @@ void loop(void){
         }
     } else if(message_available){
         Serial.print(message);
+
         instr i = get_instruction(message);
+        
         get_instruction_message(&i, message);
         Serial.println(message);
+
         handle_new_instruction(&i);
+
         message_available = false;
     }
 
     if(cpg_pulsed){
         int true_crank = get_true_crank_angle(saved_pulses);
 
-        if(true_crank != -1 && saved_crank != true_crank){
+        if(true_crank == -1){
+            Serial.println("Missed pulse.\n");
+        } else if(true_crank != -1 && saved_crank != true_crank){
             if(e.is_running){
                 shutdown_and_print("CPG and IPG signals don't match.\n");
             } else {
@@ -172,9 +186,9 @@ void loop(void){
             if(!(tacho % TIMINGS_TACHO)) update_timings = true;
             if(!(tacho % TEMP_TACHO)) update_temperature = true;
 
-            #ifdef SPEED_TEST
-            if(!(tacho % SPEED_TEST_TACHO)){
-                update_speed_test = true;
+            #if defined(SPEED_TEST) || defined(SHUTDOWN_TEST)
+            if(!(tacho % REPORT_TEST_TACHO)){
+                update_test_report = true;
             }
             #endif
         }
@@ -192,6 +206,10 @@ void loop(void){
     if(update_timings){
         update_timings = false;
         int err = set_engine_timings(&t, &o, &e);
+
+        if(err){
+            shutdown_and_print("Error occurred when updating timings.\n");
+        }
     } else if(update_temperature){
         update_temperature = false;
         get_internal_temp(&e);
@@ -208,18 +226,26 @@ void loop(void){
     float angle_difference = estimated_crank - prev_estimated_crank;
     if(angle_difference < 0) angle_difference += 720;
 
-    if(update_speed_test){
+    if(update_test_report){
         print_angle("Esimated crank:", estimated_crank);
         print_angle("Previous estimated crank:", prev_estimated_crank);
         print_angle("   Loop angle difference:", angle_difference);
         Serial.println();
-        update_speed_test = false;
+        update_test_report = false;
     }
 
     prev_estimated_crank = estimated_crank;
     #endif
     
     if(e.is_running){
+        
+        #ifdef SHUTDOWN_TEST
+        if(update_test_report){
+            Serial.println("Engine is running.\n");
+            update_test_report = false;
+        }
+        #endif
+
         for(int c = 0; c < 4; c++){
             float a = fmod(estimated_crank + cylinder_phases[c], 720);
 
