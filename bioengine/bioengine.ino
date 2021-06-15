@@ -10,8 +10,10 @@
 
 // Maximum internal temperature of control system allowed, in deg C
 #define MAX_TEMP        80
+// The initial target RPM of the system upon start-up
 #define TARGET_RPM      1000
 
+// The number of crankshaft rotations before the timings and temperatures are recalculated
 #define TACHO_MODULO    1000
 #define TIMINGS_TACHO   10
 #define TEMP_TACHO      50
@@ -19,9 +21,9 @@
 //#define SPEED_TEST
 //#define SHUTDOWN_TEST
 
-// Comment
+// Struct that selects the optimal GT Power 
 operating_point o;
-// Comment
+// Struct containing information about the optimal fuel/spark timings calculated from the engine speed
 timings t;
 // Struct containing information about the state of the engine
 engine e;
@@ -32,8 +34,9 @@ unsigned long tacho = 0;
 
 // Counter for the number of IPG pulses between successive CPG pulses
 volatile char pulses = 1;
+// Variables that record the number of pulses and the crankshaft angle when the CPG last pulsed
 volatile int saved_pulses, saved_crank;
-
+//
 volatile unsigned long current_pulse;
 volatile unsigned long last_pulse;
 
@@ -247,6 +250,7 @@ void loop(void){
         #endif
 
         for(int c = 0; c < 4; c++){
+            // Calculate the phase of each cylinder based off the estimated crankshaft angle
             float a = fmod(estimated_crank + cylinder_phases[c], 720);
 
             if(should_open_circuit(a, t.spark, &(e.coils[c]))){

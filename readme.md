@@ -4,6 +4,8 @@ This is the repository for the software used for the DMT Biofuel Engine Sensors 
 
 This is based off camshaft and crankshaft encoders from the engine to determine the precise angle of the shafts. By modelling the engine using 1D analysis, the optimal shaft angles for charging/discharging the ignition coils or opening/closing the fuel injectors can be found. When the shaft positions reach these optimal angles, the program will open or close the appropriate circuit controlling one of the ignition coils or fuel injectors.
 
+__The software has not yet been fully refactored or commented.__ This will be completed in the next few weeks.
+
 ![Control System main loop flowchart](./main_flowchart_updated.png)
 
 ## Pre-requisites
