@@ -4,7 +4,7 @@ This is the repository for the software used for the DMT Biofuel Engine Sensors 
 
 This is based off camshaft and crankshaft encoders from the engine to determine the precise angle of the shafts. By modelling the engine using 1D analysis, the optimal shaft angles for charging/discharging the ignition coils or opening/closing the fuel injectors can be found. When the shaft positions reach these optimal angles, the program will open or close the appropriate circuit controlling one of the ignition coils or fuel injectors.
 
-![Control System main loop flowchart](./main_flowchart.png)
+![Control System main loop flowchart](./main_flowchart_updated.png)
 
 ## Pre-requisites
 
@@ -57,11 +57,29 @@ arduino-cli upload bioengine -v --port [PORT_NAME] --fqbn arduino:avr:micro
 
 ## Usage
 
+When the program has been uploaded, Click on the __Serial Monitor__ from the __Tools__ dropdown menu. This will allow you to communicate and instruct the Arduino to open/close different circuits.
+
+Set the baud rate to 9600 Bd. __Ensure that the Serial messages are sent with a newline at the end.__ This is how the Arduino knows a message is available. This can be selected from the dropdown menu at the bottom of the serial monitor.
+
+The instructions passed to the Arduino have a bash-style syntax:
+
+```bash
+command [--RPM target_speed ]
+```
+
+There are four commands available:
+
+- `START`, which starts the engine by allowing the control system to control the injector and ignition coil circuits.
+- `STOP`, which shuts down the engine.
+- `SET`, which allows you to configure parts of the control system. So far, only the target engine speed can be configured but this will be expanded soon.
+- `STATUS`, which details information about the control system and its latest estimations of the timings, speed and temperature.
+
+`--RPM` is a flag used with the `SET` command to select the target engine speed while the control system is running. 
+
+The speed value is given in RPM, and will cause the circuit to pulse at the same rate as if the engine had that RPM.
 
 
 ## Testing
-
-This repository contains three tests.
 
 ### PCB Test
 
@@ -69,15 +87,15 @@ The PCB test is a test script that is run on the Arduino while it is housed in t
 
 This test is necessary for checking all the transistors function as they should, by producing a square wave for a particular injector or coil circuit, at a particular engine speed.
 
-For more information, go to the readme within `pcb_test/`.
-
-### Unit test
-
-More information will be added shortly.
+For more information, go to the readme within `pcb_test/` and refer to the PCB Test Specification in the Testing Report.
 
 ### Engine Simulation (integration) test
 
-More information will be added shortly.
+The engine simulator test is a script for modelling engine signals that are used in the control system. This is includes the CPG, IPG and the analog signal from the thermistor.
+
+This test is used to determine the speed and resilience of the constrol system software when loaded onto the Arduino Micro.
+
+For more information, go to the readme within `engine_simulator/` and refer to the Engine Simulator Test Specification in the Testing Report.
 
 ## Repository structure
 
@@ -107,15 +125,12 @@ DMT-Control-System/
                 messages/
                     messages.h
                     messages.c
-        unit_test/
-            bioengine.test.c
-            Makefile
-            src/
-                unittest/
-                    unittest.c
-                    unittest.h
         engine_simulator/
             engine_simulator.ino
+            src/
+                messages/
+                    messages.h
+                    messages.c
 ```
 
 Note some of these libraries are copied over to the test folders. This is due to a quirk of Arduino when compiling, where local libraries can only be found if they are in a `src/` folder within the Arduino sketch.
